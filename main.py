@@ -1,18 +1,25 @@
 import math
+from units import Fermenter, Filter, Distiller, Dehydrator
 
 
 
 # DESIGN VARIABLES (assumed)
 
-SLURRY_VOLUME = 835000 # gal/day
+DAILY_FLOW_RATE = 3161.58 # m3/day
 NUM_VALVES = 8
 NUM_BENDS = 4 # 90 degrees
 
-FERMENTOR_EFFICIENCY = 0.5
-DISTILLER_EFFICIENCY = 0.81
-FILTER_EFFICIENCY = 0.5
-DEHYDRATOR_EFFICIENCY = 0.5
 PUMP_EFFICIENCY = 0.8
+
+FERMENTER_EFFICIENCY = 0.5
+FILTER_EFFICIENCY = 0.5
+DISTILLER_EFFICIENCY = 0.81
+DEHYDRATOR_EFFICIENCY = 0.5
+
+FERMENTER_ENERGY = 46600 # kWh/day
+DISTILLER_ENERGY = 47004 # kWh/day
+FILTER_ENERGY = 48800 # kWh/day
+DEHYDRATOR_ENERGY = 48800 # kWh/day
 
 '''
 Placeholder
@@ -35,19 +42,6 @@ SLURRY_PERCENT_WEIGHT_SUGAR = 0.20
 SLURRY_PERCENT_WEIGHT_ETHANOL = 0
 SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
 SLURRY_PERCENT_WEIGHT_WATER = 0.60
-
-components = {
-
-    DENSITY_SUGAR: SLURRY_PERCENT_WEIGHT_SUGAR, 
-    DENSITY_ETHANOL: SLURRY_PERCENT_WEIGHT_ETHANOL,
-    DENSITY_FIBROUS: SLURRY_PERCENT_WEIGHT_FIBROUS,
-    DENSITY_WATER: SLURRY_PERCENT_WEIGHT_WATER
-    
-    }
-
-g = 9.81 # m/s2
-
-
 
 
 
@@ -87,4 +81,69 @@ def energyLostToValve(fluidMass, lossCoefficient, fluidVelocity):
     return 1/2 * fluidMass * lossCoefficient * fluidVelocity**2
 
 
+def runProductionLine(initialMasses, units):
+
+    state = initialMasses
+    outputs = []
+
+    # Units needs to be a list of tuples with each tuple consisting
+    # of the unit's class, its efficiency, and its energy input
+    for unitClass, efficiency, energy in units:
+
+        # We initialize an instance of unitClass, whether that's
+        # Fermenter, Filter, Distiller, or Dehydrator
+
+        # We treat the current mass flows of each "thing" as a state vector
+        # The output of each machine is the input of the next one
+        unit = unitClass(efficiency, energy, *state)
+        outputs.append(unit)
+        state = unit.getOutputs()
+
+    return outputs
+
+def main():
+    units = [
+        (Fermenter, FERMENTER_EFFICIENCY, FERMENTER_ENERGY),
+        (Filter, FILTER_EFFICIENCY, FILTER_ENERGY),
+        (Distiller, DISTILLER_EFFICIENCY, DISTILLER_ENERGY),
+        (Dehydrator, DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY)
+    ]
+
+    
+    components = {
+
+        DENSITY_SUGAR: SLURRY_PERCENT_WEIGHT_SUGAR, 
+        DENSITY_ETHANOL: SLURRY_PERCENT_WEIGHT_ETHANOL,
+        DENSITY_FIBROUS: SLURRY_PERCENT_WEIGHT_FIBROUS,
+        DENSITY_WATER: SLURRY_PERCENT_WEIGHT_WATER
+        
+    }
+
+    fluidDensity = calcDensityMixture(components)
+
+    fluidMass = calcFluidMass(fluidDensity, DAILY_FLOW_RATE, 1) # Just run it for 1 day 
+
+    initialMasses = [
+        fluidMass * SLURRY_PERCENT_WEIGHT_SUGAR,
+        fluidMass * SLURRY_PERCENT_WEIGHT_ETHANOL,
+        fluidMass * SLURRY_PERCENT_WEIGHT_FIBROUS,
+        fluidMass * SLURRY_PERCENT_WEIGHT_WATER
+    ]
+
+    units = runProductionLine(initialMasses, units)
+
+    for unit in units:
+        print(type(unit).__name__)
+        print("Output masses:", unit.getOutputs())
+        print("Total mass:", unit.getTotalMassOutput())
+        print("Purity:", unit.getOutputPurity())
+        print()
+
+
+
+
+
+
+if __name__ == "__main__":
+    main()
     
