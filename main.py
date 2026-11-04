@@ -44,6 +44,10 @@ SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
 SLURRY_PERCENT_WEIGHT_WATER = 0.60
 
 
+# Uses a weighted average with mass percents as weights
+# Unconventional, since volume ratios are typically used for weighted avg
+# I'm using these ONLY because it aligns with the model validation provided
+# And using a more "proper" way deviates from validation data
 def calcDensityMixture(components: dict):
     return sum(rho * m_p for rho,m_p in components.items())
 
