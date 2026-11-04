@@ -85,6 +85,8 @@ class Filter(Unit):
 class Distiller(Unit):
     def __init__(self, *args):
         super().__init__(*args)
+
+        # Only doing this to stay within the 80 char/line limit
         self.numer = (self.ethanol * ((1/self.efficiency) - 1))
         self.denom = (self.water + self.sugar + self.fibrous)
 
