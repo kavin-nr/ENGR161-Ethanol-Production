@@ -44,20 +44,9 @@ SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
 SLURRY_PERCENT_WEIGHT_WATER = 0.60
 
 
-
-'''
-Outputs:
-Capital Cost:   ~ $ 1,867,000   ( including estimated $12,000 cost for remediating mold ) 
-Energy ROI:   ~ 5. 55
-Volume of Ethanol Out : ~ 68.70 * 10^3 gal/day   (too low)
-Purity   of Ethanol   Out:   87 %   (not good enough   per requirements, need 9 8 %+ )
-'''
-
 def calcDensityMixture(components: dict):
-    sum = 0
-    for density, mass_percent in components.items():
-        sum += mass_percent / density
-    return 1 / sum
+    return sum(rho * m_p for rho,m_p in components.items())
+
 
 def calcFluidMass(fluidDensity, volumetricFlowRate, timeElapsed):
     return fluidDensity * volumetricFlowRate * timeElapsed
@@ -69,8 +58,13 @@ def energyLostToPump(energyInput):
     return (1 - PUMP_EFFICIENCY) * energyInput
 
 # For a given pipe
-def energyLostToFriction(fluidMass, frictionFactor, pipeLength, pipeDiameter, volumetricFlowRate):
-    return fluidMass * frictionFactor * (8 * volumetricFlowRate**2 * pipeLength) / ((math.pi)**2 * (pipeDiameter)**5)
+def energyLostToFriction(fluidMass, frictionFactor, pipeLength, 
+        pipeDiameter, volumetricFlowRate):
+
+    # Had to split things up to ensure line isn't 80+ chars long
+    top = fluidMass * frictionFactor * (8 * volumetricFlowRate**2 * pipeLength)
+    bottom = ((math.pi)**2 * (pipeDiameter)**5)
+    return top / bottom
 
 # Per bend
 def energyLostToBend(fluidMass, pipeBendFactor, fluidVelocity):
@@ -121,7 +115,8 @@ def main():
 
     fluidDensity = calcDensityMixture(components)
 
-    fluidMass = calcFluidMass(fluidDensity, DAILY_FLOW_RATE, 1) # Just run it for 1 day 
+    # Just run it for 1 day 
+    fluidMass = calcFluidMass(fluidDensity, DAILY_FLOW_RATE, 1)
 
     initialMasses = [
         fluidMass * SLURRY_PERCENT_WEIGHT_SUGAR,
