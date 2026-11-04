@@ -132,12 +132,29 @@ def main():
 
     units = runProductionLine(initialMasses, units)
 
+    
     for unit in units:
-        print(type(unit).__name__)
-        print("Output masses:", unit.getOutputs())
-        print("Total mass:", unit.getTotalMassOutput())
-        print("Purity:", unit.getOutputPurity())
+        sugar, ethanol, fibrous, water = unit.getOutputs()
+
+        # Just a lot of pretty formatting to make things pop
+        print("=" * 45)
+        print(type(unit).__name__.upper())
+        print("=" * 45)
         print()
+
+        print(f"Sugar Output: {sugar:,.2f} kg/day")
+        print(f"Ethanol Output: {ethanol:,.2f} kg/day")
+        print(f"Fibrous Output: {fibrous:,.2f} kg/day")
+        print(f"Water Output: {water:,.2f} kg/day")
+        print() 
+
+        print(f"Total Mass Output: {unit.getTotalMassOutput():,.2f} kg/day")
+        print(f"Ethanol Purity: {unit.getOutputPurity():.2%}")
+        print(f"Energy Input: {unit.getEnergy():,.2f} kWh/day")
+
+        print()
+        print()
+
 
 
 
