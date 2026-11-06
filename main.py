@@ -1,5 +1,6 @@
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
+from catalog import FERMENTER_OPTIONS, FILTER_OPTIONS, DISTILLER_OPTIONS, DEHYDRATOR_OPTIONS
 
 # CONSTANTS
 
@@ -21,21 +22,6 @@ NUM_BENDS = 4 # 90 degrees
 
 PUMP_EFFICIENCY = 0.8
 
-FERMENTER_EFFICIENCY = 0.5
-FILTER_EFFICIENCY = 0.5
-DISTILLER_EFFICIENCY = 0.81
-DEHYDRATOR_EFFICIENCY = 0.5
-
-FERMENTER_COST = 320000 # $ per m3/sec
-FILTER_COST = 200000 # $ per m3/sec
-DISTILLER_COST = 390000 # $ per m3/sec
-DEHYDRATOR_COST = 200000 # $ per m3/sec
-
-FERMENTER_ENERGY = 46600 # kWh/day
-DISTILLER_ENERGY = 47004 # kWh/day
-FILTER_ENERGY = 48800 # kWh/day
-DEHYDRATOR_ENERGY = 48800 # kWh/day
-
 '''
 Placeholder
 '''
@@ -45,6 +31,18 @@ OTHER_COSTS = 0
 
 
 def main():
+
+    fermenterQuality = input("Enter fermenter quality: ")
+    filterQuality = input("Enter filter quality: ")
+    distillerQuality = input("Enter distiller quality: ")
+    dehydratorQuality = input("Enter dehydrator quality: ")
+
+    FERMENTER_EFFICIENCY, FERMENTER_ENERGY, FERMENTER_COST = FERMENTER_OPTIONS[fermenterQuality]
+    FILTER_EFFICIENCY, FILTER_ENERGY, FILTER_COST = FILTER_OPTIONS[filterQuality]
+    DISTILLER_EFFICIENCY, DISTILLER_ENERGY, DISTILLER_COST = DISTILLER_OPTIONS[distillerQuality]
+    DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY, DEHYDRATOR_COST = DEHYDRATOR_OPTIONS[dehydratorQuality]
+
+    
     units = [
         (Fermenter, FERMENTER_EFFICIENCY, FERMENTER_ENERGY, FERMENTER_COST),
         (Filter, FILTER_EFFICIENCY, FILTER_ENERGY, FILTER_COST),
