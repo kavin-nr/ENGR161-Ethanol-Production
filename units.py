@@ -94,6 +94,29 @@ class Unit:
         return 0 
 
 
+    # These two functions are mainly getters to initialize pipe objects
+    def getOutputDensity(self):
+        totalMass = self.getInputMass()
+
+        # don't want zero division errors
+        if totalMass == 0:
+            return 0
+
+        components = {
+            DENSITY_SUGAR: self.sugar / totalMass,
+            DENSITY_ETHANOL: self.ethanol / totalMass,
+            DENSITY_FIBROUS: self.fibrous / totalMass,
+            DENSITY_WATER: self.water / totalMass
+        }
+
+        return calcDensityMixture(components)
+
+    def getOutputFlowRate(self):
+        return (self.getInputMass() /
+            self.getInputDensity() / SECONDS_PER_DAY)
+
+
+
 # Sugar is converted to ethanol and co2, everything else remains
 class Fermenter(Unit):
     

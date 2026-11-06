@@ -60,3 +60,31 @@ class Duct(Pipe):
 
     # Also, the validation model says it neglects waste pipe friction. I'm 
     # just going to go with that for now. 
+
+
+def createPipes(configs, units, initialFlowRate, initialDensity):
+    pipes = []
+    for length, diameter, tier, source in configs:
+
+        # If the pipe is coming from somewhere, then use its output flow
+        if source is not None:
+            flowRate = units[source].getOutputFlowRate()
+            density = units[source].getOutputDensity()
+
+        # Initial slurry pipe, so initial slurry flow
+        else:
+            flowRate = initialFlowRate
+            density = initialDensity
+
+        # Make a pipe obejct
+        pipe = Pipe(
+            length=length,
+            diameter=diameter,
+            tier=tier,
+            flowRate=flowRate,
+            density=density
+        )
+
+        pipes.append(pipe)
+
+    return pipes

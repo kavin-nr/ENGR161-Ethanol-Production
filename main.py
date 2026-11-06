@@ -1,7 +1,7 @@
 import sys; args = sys.argv[1:] # Neat to grab command line args
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
-from pipe import Pipe
+from pipe import Pipe, Duct, createPipes
 
 
 # DESIGN VARIABLES (assumed)
@@ -12,6 +12,20 @@ NUM_VALVES = 8
 NUM_BENDS = 4 # 90 degrees
 
 PUMP_EFFICIENCY = 0.8
+
+# Pipe length, diameter, tier, and source
+# Length and diameter in meters
+# Tier is as per the parts catalog
+# Source is None for initial slurry, 
+# 0 for fermenter, 1 for filter, 2 for distiller, 3 for dehydrator
+
+pipeConfigs = [
+    (12.50, 0.10, "nice", None),
+    (3.05, 0.10, "nice", 0),
+    (3.05, 0.10, "nice", 1),
+    (3.05, 0.10, "nice", 2),
+    (1.52, 0.10, "nice", 3)
+]
 
 '''
 Costs
@@ -44,17 +58,7 @@ def main():
         (Dehydrator, dehydratorTier)
     ]
 
-    
-    components = {
-
-        DENSITY_SUGAR: SLURRY_PERCENT_WEIGHT_SUGAR, 
-        DENSITY_ETHANOL: SLURRY_PERCENT_WEIGHT_ETHANOL,
-        DENSITY_FIBROUS: SLURRY_PERCENT_WEIGHT_FIBROUS,
-        DENSITY_WATER: SLURRY_PERCENT_WEIGHT_WATER
-        
-    }
-
-    fluidDensity = calcDensityMixture(components)
+    fluidDensity = calcDensityMixture(SLURRY_COMPONENTS)
 
     # Just run it for 1 day 
     fluidMass = calcFluidMass(fluidDensity, DAILY_FLOW_RATE, 1)
@@ -68,6 +72,7 @@ def main():
 
     units = runProductionLine(initialMasses, units)
 
+    pipes = createPipes(pipeConfigs, units, FLOW_RATE, fluidDensity)
     
     
     # FINAL SYSTEM OUTPUTS
