@@ -1,6 +1,7 @@
+import sys; args = sys.argv[1:] # Neat to grab command line args
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
-from catalog import FERMENTER_OPTIONS, FILTER_OPTIONS, DISTILLER_OPTIONS, DEHYDRATOR_OPTIONS
+
 
 # CONSTANTS
 
@@ -33,22 +34,24 @@ SITE_COST = BASE_COST + MOLD_COST
 
 def main():
 
-    fermenterQuality = input("Enter fermenter quality: ")
-    filterQuality = input("Enter filter quality: ")
-    distillerQuality = input("Enter distiller quality: ")
-    dehydratorQuality = input("Enter dehydrator quality: ")
-
-    FERMENTER_EFFICIENCY, FERMENTER_ENERGY, FERMENTER_COST = FERMENTER_OPTIONS[fermenterQuality]
-    FILTER_EFFICIENCY, FILTER_ENERGY, FILTER_COST = FILTER_OPTIONS[filterQuality]
-    DISTILLER_EFFICIENCY, DISTILLER_ENERGY, DISTILLER_COST = DISTILLER_OPTIONS[distillerQuality]
-    DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY, DEHYDRATOR_COST = DEHYDRATOR_OPTIONS[dehydratorQuality]
+    if len(args) != 4:
+        print("Try again! You need 4 tiers.")
+        sys.exit(0) 
+    allowable = ["scrap", "average", "premium", "world-class"]
+    for arg in args:
+        if arg not in allowable:
+            print("Invalid arguments!")
+            sys.exit(0)
+    
+    fermenterTier, filterTier, distillerTier, dehydratorTier = args
 
     
+    
     units = [
-        (Fermenter, FERMENTER_EFFICIENCY, FERMENTER_ENERGY, FERMENTER_COST),
-        (Filter, FILTER_EFFICIENCY, FILTER_ENERGY, FILTER_COST),
-        (Distiller, DISTILLER_EFFICIENCY, DISTILLER_ENERGY, DISTILLER_COST),
-        (Dehydrator, DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY, DEHYDRATOR_COST)
+        (Fermenter, fermenterTier),
+        (Filter, filterTier),
+        (Distiller, distillerTier),
+        (Dehydrator, dehydratorTier)
     ]
 
     
