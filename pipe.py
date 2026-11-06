@@ -68,6 +68,18 @@ def createPipes(configs, units, initialFlowRate, initialDensity):
 
         # If the pipe is coming from somewhere, then use its output flow
         if source is not None:
+            match source:
+                case "fermenter":
+                    return 0
+                case "filter":
+                    return 1
+                case "distiller":
+                    return 2
+                case "dehydrator":
+                    return 3
+                case _:
+                    raise Exception("Unknown pipe source")
+            
             flowRate = units[source].getOutputFlowRate()
             density = units[source].getOutputDensity()
 

@@ -21,10 +21,10 @@ PUMP_EFFICIENCY = 0.8
 
 pipeConfigs = [
     (12.50, 0.10, "nice", None),
-    (3.05, 0.10, "nice", 0),
-    (3.05, 0.10, "nice", 1),
-    (3.05, 0.10, "nice", 2),
-    (1.52, 0.10, "nice", 3)
+    (3.05, 0.10, "nice", "fermenter"),
+    (3.05, 0.10, "nice", "filter"),
+    (3.05, 0.10, "nice", "distiller"),
+    (1.52, 0.10, "nice", "dehydrator")
 ]
 
 '''
