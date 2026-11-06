@@ -9,6 +9,14 @@ DENSITY_WATER = 997
 
 SECONDS_PER_DAY = 86400
 
+ETHANOL_ENERGY_DENSITY = 21160.18 # MJ/m3
+
+SLURRY_PERCENT_WEIGHT_SUGAR = 0.20
+SLURRY_PERCENT_WEIGHT_ETHANOL = 0
+SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
+SLURRY_PERCENT_WEIGHT_WATER = 0.60
+
+
 # Uses a weighted average with mass percents as weights
 # Unconventional, since volume ratios are typically used for weighted avg
 # I'm using these ONLY because it aligns with the model validation provided

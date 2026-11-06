@@ -1,17 +1,7 @@
 import sys; args = sys.argv[1:] # Neat to grab command line args
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
-
-
-# CONSTANTS
-
-ETHANOL_ENERGY_DENSITY = 21160.18 # MJ/m3
-SUGAR_TO_CO2_RATIO = 0.49
-
-SLURRY_PERCENT_WEIGHT_SUGAR = 0.20
-SLURRY_PERCENT_WEIGHT_ETHANOL = 0
-SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
-SLURRY_PERCENT_WEIGHT_WATER = 0.60
+from pipe import Pipe
 
 
 # DESIGN VARIABLES (assumed)
@@ -24,7 +14,7 @@ NUM_BENDS = 4 # 90 degrees
 PUMP_EFFICIENCY = 0.8
 
 '''
-Placeholder
+Costs
 '''
 BASE_COST = 1600000 * 1.1 # USD, this is Site 3, with 10% upfront tax
 MOLD_COST = 18000 # USD, worst-case scenario
