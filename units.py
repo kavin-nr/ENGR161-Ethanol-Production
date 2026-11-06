@@ -1,17 +1,23 @@
+from utils import calcDensityMixture, DENSITY_SUGAR, DENSITY_ETHANOL, DENSITY_FIBROUS, DENSITY_WATER, SECONDS_PER_DAY
 # Parent class for all 4 units
 class Unit:
 
     # Note the order: sugar, ethanol, fibrous, then water
-    def __init__(self, efficiency, energy_needed, 
+    def __init__(self, efficiency, energy_needed, costPerM3perSec, 
             sugarMass, ethanolMass, fibrousMass, waterMass):
         
         self.efficiency = efficiency        # Actual efficiency of the machine
         self.energy_needed = energy_needed  # Energy input for the machine
 
+        # Multiply this by input cost and convert to $/day
+        self.costPerM3perSec = costPerM3perSec
+
         self.sugar = sugarMass
         self.ethanol = ethanolMass
         self.fibrous = fibrousMass
         self.water = waterMass
+
+
 
     def getSugar(self):
         return self.sugar
@@ -28,6 +34,37 @@ class Unit:
     def getEnergy(self):
         return self.energy_needed
 
+    
+    def getInputMass(self):
+        return (self.sugar + self.ethanol +
+                self.fibrous + self.water)
+
+    def getInputDensity(self):
+        totalMass = self.getInputMass()
+
+        if totalMass == 0:
+            return 0
+
+        components = {
+            DENSITY_SUGAR: self.sugar / totalMass,
+            DENSITY_ETHANOL: self.ethanol / totalMass,
+            DENSITY_FIBROUS: self.fibrous / totalMass,
+            DENSITY_WATER: self.water / totalMass
+        }
+
+        return calcDensityMixture(components)
+
+    def getInputFlowRate(self):
+        if self.getInputMass() == 0:
+            return 0
+
+        return (self.getInputMass() /
+                self.getInputDensity() / SECONDS_PER_DAY)
+
+    def getCapitalCost(self):
+        return self.costPerM3perSec * self.getInputFlowRate()
+
+    
     # Returned as a state vector for easy transfer into next machine
     def getOutputs(self):
         return [self.getSugar(), self.getEthanol(), 

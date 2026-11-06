@@ -1,4 +1,3 @@
-import math
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
 
@@ -6,17 +5,11 @@ from utils import *
 
 ETHANOL_ENERGY_DENSITY = 21160.18 # MJ/m3
 SUGAR_TO_CO2_RATIO = 0.49
-DENSITY_SUGAR = 1599 # kg/m3
-DENSITY_ETHANOL = 789.00 # kg/m3
-DENSITY_FIBROUS = 1311 # kg/m3
-DENSITY_WATER = 997 # kg/m3
 
 SLURRY_PERCENT_WEIGHT_SUGAR = 0.20
 SLURRY_PERCENT_WEIGHT_ETHANOL = 0
 SLURRY_PERCENT_WEIGHT_FIBROUS = 0.20
 SLURRY_PERCENT_WEIGHT_WATER = 0.60
-
-SECONDS_PER_DAY = 86400
 
 
 # DESIGN VARIABLES (assumed)
@@ -33,6 +26,11 @@ FILTER_EFFICIENCY = 0.5
 DISTILLER_EFFICIENCY = 0.81
 DEHYDRATOR_EFFICIENCY = 0.5
 
+FERMENTER_COST = 320000 # $ per m3/sec
+FILTER_COST = 200000 # $ per m3/sec
+DISTILLER_COST = 390000 # $ per m3/sec
+DEHYDRATOR_COST = 200000 # $ per m3/sec
+
 FERMENTER_ENERGY = 46600 # kWh/day
 DISTILLER_ENERGY = 47004 # kWh/day
 FILTER_ENERGY = 48800 # kWh/day
@@ -48,10 +46,10 @@ OTHER_COSTS = 0
 
 def main():
     units = [
-        (Fermenter, FERMENTER_EFFICIENCY, FERMENTER_ENERGY),
-        (Filter, FILTER_EFFICIENCY, FILTER_ENERGY),
-        (Distiller, DISTILLER_EFFICIENCY, DISTILLER_ENERGY),
-        (Dehydrator, DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY)
+        (Fermenter, FERMENTER_EFFICIENCY, FERMENTER_ENERGY, FERMENTER_COST),
+        (Filter, FILTER_EFFICIENCY, FILTER_ENERGY, FILTER_COST),
+        (Distiller, DISTILLER_EFFICIENCY, DISTILLER_ENERGY, DISTILLER_COST),
+        (Dehydrator, DEHYDRATOR_EFFICIENCY, DEHYDRATOR_ENERGY, DEHYDRATOR_COST)
     ]
 
     
@@ -97,6 +95,12 @@ def main():
         print(f"Total Mass Output: {unit.getTotalMassOutput():,.2f} kg/day")
         print(f"Ethanol Purity: {unit.getOutputPurity():.2%}")
         print(f"Energy Input: {unit.getEnergy():,.2f} kWh/day")
+
+
+        print(f"Input Mass: {unit.getInputMass():,.2f} kg/day")
+        print(f"Input Density: {unit.getInputDensity():,.2f} kg/m3")
+        print(f"Input Flow Rate: {unit.getInputFlowRate():.6f} m3/s")
+        print(f"Capital Cost: ${unit.getCapitalCost():,.2f}")
 
         print()
         print()

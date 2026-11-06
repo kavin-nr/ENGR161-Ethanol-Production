@@ -1,5 +1,14 @@
 import math
 
+# Constants
+
+DENSITY_SUGAR = 1599
+DENSITY_ETHANOL = 789.00
+DENSITY_FIBROUS = 1311
+DENSITY_WATER = 997
+
+SECONDS_PER_DAY = 86400
+
 # Uses a weighted average with mass percents as weights
 # Unconventional, since volume ratios are typically used for weighted avg
 # I'm using these ONLY because it aligns with the model validation provided
@@ -42,14 +51,14 @@ def runProductionLine(initialMasses, units):
 
     # Units needs to be a list of tuples with each tuple consisting
     # of the unit's class, its efficiency, and its energy input
-    for unitClass, efficiency, energy in units:
+    for unitClass, efficiency, energy, costPerM3PerSec in units:
 
         # We initialize an instance of unitClass, whether that's
         # Fermenter, Filter, Distiller, or Dehydrator
 
         # We treat the current mass flows of each "thing" as a state vector
         # The output of each machine is the input of the next one
-        unit = unitClass(efficiency, energy, *state)
+        unit = unitClass(efficiency, energy, costPerM3PerSec, *state)
         outputs.append(unit)
         state = unit.getOutputs()
 
