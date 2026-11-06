@@ -39,7 +39,7 @@ DEHYDRATOR_ENERGY = 48800 # kWh/day
 '''
 Placeholder
 '''
-SITE_COST = 0 
+SITE_COST = 1600000 # USD, this is Site 3. 
 OTHER_COSTS = 0
 
 
@@ -77,33 +77,77 @@ def main():
     units = runProductionLine(initialMasses, units)
 
     
-    for unit in units:
-        sugar, ethanol, fibrous, water = unit.getOutputs()
+    
+    # FINAL SYSTEM OUTPUTS
 
-        # Just a lot of pretty formatting to make things pop
-        print("=" * 45)
-        print(type(unit).__name__.upper())
-        print("=" * 45)
-        print()
+    finalUnit = units[-1]
 
-        print(f"Sugar Output: {sugar:,.2f} kg/day")
-        print(f"Ethanol Output: {ethanol:,.2f} kg/day")
-        print(f"Fibrous Output: {fibrous:,.2f} kg/day")
-        print(f"Water Output: {water:,.2f} kg/day")
-        print() 
+    # Final product
+    finalMass = finalUnit.getTotalMassOutput()
+    finalPurity = finalUnit.getOutputPurity()
+    ethanolMass = finalUnit.getEthanol()
 
-        print(f"Total Mass Output: {unit.getTotalMassOutput():,.2f} kg/day")
-        print(f"Ethanol Purity: {unit.getOutputPurity():.2%}")
-        print(f"Energy Input: {unit.getEnergy():,.2f} kWh/day")
+    # Calculate final product volume
+    finalDensity = calcDensityMixture({
+        DENSITY_SUGAR: finalUnit.getSugar() / finalMass,
+        DENSITY_ETHANOL: finalUnit.getEthanol() / finalMass,
+        DENSITY_FIBROUS: finalUnit.getFibrous() / finalMass,
+        DENSITY_WATER: finalUnit.getWater() / finalMass
+    })
 
+    finalVolume = finalMass / finalDensity
+    finalGallons = finalVolume * 264.172
 
-        print(f"Input Mass: {unit.getInputMass():,.2f} kg/day")
-        print(f"Input Density: {unit.getInputDensity():,.2f} kg/m3")
-        print(f"Input Flow Rate: {unit.getInputFlowRate():.6f} m3/s")
-        print(f"Capital Cost: ${unit.getCapitalCost():,.2f}")
+    # Capital costs (unit operations only)
+    unitCapitalCost = sum(unit.getCapitalCost() for unit in units)
 
-        print()
-        print()
+    # Total costs
+    totalCost = unitCapitalCost + SITE_COST
+
+    # Electrical energy used by unit operations
+    totalEnergy = sum(unit.getEnergy() for unit in units)
+
+    # Ethanol energy output (MJ/day)
+    ethanolVolume = ethanolMass / DENSITY_ETHANOL
+    energyOutput = ethanolVolume * ETHANOL_ENERGY_DENSITY
+
+    # Energy ROI (excluding pump energy for now)
+    energyROI = energyOutput / (totalEnergy * 3.6)
+
+    # Final summary
+    print("=" * 50)
+    print("ETHANOL PRODUCTION FACILITY - SYSTEM SUMMARY")
+    print("=" * 50)
+    print()
+
+    print("PRODUCTION")
+    print(f"Initial Slurry: {DAILY_FLOW_RATE:,.2f} m3/day")
+    print(f"Final Product: {finalGallons:,.2f} gal/day")
+    print(f"Ethanol Produced: {ethanolMass:,.2f} kg/day")
+    print(f"Ethanol Purity: {finalPurity:.2%}")
+    print()
+
+    print("ENERGY")
+    print(f"Electrical Input: {totalEnergy:,.2f} kWh/day")
+    print(f"Ethanol Energy: {energyOutput:,.2f} MJ/day")
+    print(f"Energy ROI: {energyROI:.2f}")
+    print()
+
+    print("CAPITAL COSTS")
+    print(f"Unit Operations: ${unitCapitalCost:,.2f}")
+    print()
+
+    print("TOTAL COST")
+    print(f"${totalCost:,.2f}")
+    print()
+
+    print("REQUIREMENTS")
+    print(f"Production Target: 100000 gal/day")
+    print(f"Purity Target: 98%")
+    print(f"Production Met: {finalGallons >= 100000}")
+    print(f"Purity Met: {finalPurity >= 0.98}")
+    print()
+
 
 
 
