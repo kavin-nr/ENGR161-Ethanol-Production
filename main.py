@@ -25,8 +25,9 @@ PUMP_EFFICIENCY = 0.8
 '''
 Placeholder
 '''
-SITE_COST = 1600000 # USD, this is Site 3. 
-OTHER_COSTS = 0
+BASE_COST = 1600000 * 1.1 # USD, this is Site 3, with 10% upfront tax
+MOLD_COST = 18000 # USD, worst-case scenario
+SITE_COST = BASE_COST + MOLD_COST
 
 
 
