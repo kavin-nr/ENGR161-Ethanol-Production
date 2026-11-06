@@ -50,15 +50,15 @@ def runProductionLine(initialMasses, units):
     outputs = []
 
     # Units needs to be a list of tuples with each tuple consisting
-    # of the unit's class, its efficiency, and its energy input
-    for unitClass, efficiency, energy, costPerM3PerSec in units:
+    # of the class and a string representing the tier.
+    for unitClass, tier in units:
 
         # We initialize an instance of unitClass, whether that's
         # Fermenter, Filter, Distiller, or Dehydrator
 
         # We treat the current mass flows of each "thing" as a state vector
         # The output of each machine is the input of the next one
-        unit = unitClass(efficiency, energy, costPerM3PerSec, *state)
+        unit = unitClass(tier, *state)
         outputs.append(unit)
         state = unit.getOutputs()
 

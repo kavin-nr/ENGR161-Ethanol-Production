@@ -1,16 +1,25 @@
-from utils import calcDensityMixture, DENSITY_SUGAR, DENSITY_ETHANOL, DENSITY_FIBROUS, DENSITY_WATER, SECONDS_PER_DAY
+from utils import (calcDensityMixture, DENSITY_SUGAR, DENSITY_ETHANOL, 
+    DENSITY_FIBROUS, DENSITY_WATER, SECONDS_PER_DAY)
+from catalog import (FERMENTER_OPTIONS, FILTER_OPTIONS, 
+    DISTILLER_OPTIONS, DEHYDRATOR_OPTIONS)
+
+
 # Parent class for all 4 units
 class Unit:
 
     # Note the order: sugar, ethanol, fibrous, then water
-    def __init__(self, efficiency, energy_needed, costPerM3perSec, 
-            sugarMass, ethanolMass, fibrousMass, waterMass):
-        
-        self.efficiency = efficiency        # Actual efficiency of the machine
-        self.energy_needed = energy_needed  # Energy input for the machine
+    def __init__(self, tier, sugarMass, ethanolMass, fibrousMass, waterMass):
 
-        # Multiply this by input cost and convert to $/day
-        self.costPerM3perSec = costPerM3perSec
+        catalogs = {
+            Fermenter: FERMENTER_OPTIONS,
+            Filter: FILTER_OPTIONS,
+            Distiller: DISTILLER_OPTIONS,
+            Dehydrator: DEHYDRATOR_OPTIONS
+        }
+        self.tier = tier
+        options = catalogs[type(self)][tier]
+
+        self.efficiency, self.energy_needed, self.costPerM3perSec = options
 
         self.sugar = sugarMass
         self.ethanol = ethanolMass
