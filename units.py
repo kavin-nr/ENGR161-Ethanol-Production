@@ -42,6 +42,7 @@ class Unit:
     def getInputDensity(self):
         totalMass = self.getInputMass()
 
+        # don't want zero division errors
         if totalMass == 0:
             return 0
 
@@ -55,11 +56,8 @@ class Unit:
         return calcDensityMixture(components)
 
     def getInputFlowRate(self):
-        if self.getInputMass() == 0:
-            return 0
-
         return (self.getInputMass() /
-                self.getInputDensity() / SECONDS_PER_DAY)
+            self.getInputDensity() / SECONDS_PER_DAY)
 
     def getCapitalCost(self):
         return self.costPerM3perSec * self.getInputFlowRate()
