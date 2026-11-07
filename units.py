@@ -98,10 +98,10 @@ class Unit:
             return 0
 
         components = {
-            DENSITY_SUGAR: self.sugar / totalMass,
-            DENSITY_ETHANOL: self.ethanol / totalMass,
-            DENSITY_FIBROUS: self.fibrous / totalMass,
-            DENSITY_WATER: self.water / totalMass
+            DENSITY_SUGAR: self.getSugar() / totalMass,
+            DENSITY_ETHANOL: self.getEthanol() / totalMass,
+            DENSITY_FIBROUS: self.getFibrous() / totalMass,
+            DENSITY_WATER: self.getWater() / totalMass
         }
 
         return calcDensityMixture(components)
