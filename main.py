@@ -32,7 +32,7 @@ UNIT_ELEVATIONS = [h * M_PER_FT for h in UNIT_ELEVATIONS]
 
 # Length, diameter, tier, source, fluidDirection, bends, valves
 
-pipeConfigs = [
+PIPE_CONFIGS = [
     (41, 0.10, "nice", None, 1, [90], ["questionable"]),           # INPUT
     (10, 0.10, "nice", "fermenter", -1, [], ["questionable", "questionable"]),# FERMENTER OUTPUT
     (10, 0.10, "nice", "filter", -1, [], ["questionable", "questionable"]),       # FILTER OUTPUT
@@ -49,7 +49,7 @@ pipeConfigs = [
 
 # 0.3048 meters per foot. the internal stuff expects meters but we like feet
 pipeConfigs = [(l*M_PER_FT, d, t, s, f, b, v) 
-               for l, d, t, s, f,  b, v in pipeConfigs]
+               for l, d, t, s, f,  b, v in PIPE_CONFIGS]
 
 '''
 Costs
