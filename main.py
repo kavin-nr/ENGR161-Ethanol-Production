@@ -14,18 +14,28 @@ NUM_BENDS = 4 # 90 degrees
 PUMP_EFFICIENCY = 0.8
 
 # Pipe length, diameter, tier, and source
-# Length and diameter in meters
+# Length in FEET but diameter in meters
 # Tier is as per the parts catalog
 # Source is None for initial slurry, 
-# 0 for fermenter, 1 for filter, 2 for distiller, 3 for dehydrator
 
+# Again, lengths (1st param) are in feeeeeet...
 pipeConfigs = [
-    (12.50, 0.10, "nice", None),
-    (3.05, 0.10, "nice", "fermenter"),
-    (3.05, 0.10, "nice", "filter"),
-    (3.05, 0.10, "nice", "distiller"),
-    (1.52, 0.10, "nice", "dehydrator")
+    (41, 0.10, "nice", None),           # INPUT
+    (10, 0.10, "nice", "fermenter"),    # FERMENTER OUTPUT
+    (10, 0.10, "nice", "filter"),       # FILTER OUTPUT
+    (10, 0.10, "nice", "distiller"),    # DISTILLER OUTPUT
+    (5, 0.10, "nice", "dehydrator"),    # OUTPUT
+
+    (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste"),    # CO2 
+    (1, 0.10, "salvage", "filter-waste"),     # FILTER WASTE
+    (1, 0.10, "salvage", "distiller-waste"),     # DISTILLER WASTE
+    (1, 0.10, "salvage", "dehydrator-waste")     # DEHYDRATOR WASTE
+
 ]
+
+
+# 0.3048 meters per foot. the internal stuff expects meters but we like feet
+pipeConfigs = [(l*0.3048, d, t, s) for l, d, t, s in pipeConfigs]
 
 '''
 Costs
@@ -73,7 +83,7 @@ def main():
     units = runProductionLine(initialMasses, units)
 
     pipes = createPipes(pipeConfigs, units, FLOW_RATE, fluidDensity)
-    
+
     
     # FINAL SYSTEM OUTPUTS
 
@@ -98,8 +108,10 @@ def main():
     # Capital costs (unit operations only)
     unitCapitalCost = sum(unit.getCapitalCost() for unit in units)
 
+    pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
+
     # Total costs
-    totalCost = unitCapitalCost + SITE_COST
+    totalCost = unitCapitalCost + pipeCapitalCost + SITE_COST
 
     # Electrical energy used by unit operations
     totalEnergy = sum(unit.getEnergy() for unit in units)
@@ -132,6 +144,7 @@ def main():
 
     print("CAPITAL COSTS")
     print(f"Unit Operations: ${unitCapitalCost:,.2f}")
+    print(f"Pipe and Duct Costs: ${pipeCapitalCost:,.2f}")
     print()
 
     print("TOTAL COST")
