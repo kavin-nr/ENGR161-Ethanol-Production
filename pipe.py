@@ -73,9 +73,15 @@ class Pipe:
 
         return loss
 
-    def getGravitationalPEChange(self):
-        return self.getFluidMass() * LITTLE_G * self.heightChange
-    
+    def getGravitationalPEChange(self, heightChange=None):
+        if heightChange == None:
+            heightChange = self.heightChange
+        return self.getFluidMass() * LITTLE_G * heightChange
+
+    # Important for waste pipes
+    def getKineticEnergy(self):
+        return 0.5 * self.getFluidMass() * self.getVelocity()**2
+
     # Energy loss for a given pipe system is friction + fittings (for now)
     # i need to add gravitational potential energy
     def getEnergyLoss(self):
@@ -113,6 +119,8 @@ class Duct(Pipe):
 
     # Also, the validation model says it neglects waste pipe friction. I'm 
     # just going to go with that for now. 
+        def getEnergyLoss(self):
+            return 0
 
 
 def createPipes(configs, units, initialFlowRate, initialDensity):

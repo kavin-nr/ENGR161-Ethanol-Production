@@ -12,6 +12,12 @@ FLOW_RATE = 3161.58 / SECONDS_PER_DAY # m3/s
 PUMP_TIER = "cheap"
 PUMP_HEIGHT = 18
 
+# Elevations of unit outlets relative to ground (feet, but we'll convert)
+# Fermenter, filter, distiller, dehydrator
+UNIT_ELEVATIONS = [40, 20, 0, 0]
+
+UNIT_ELEVATIONS = [h * M_PER_FT for h in UNIT_ELEVATIONS]
+
 # Length in FEET but diameter in meters
 # Tier is as per the parts catalog
 # Source is None for initial slurry, 
@@ -42,7 +48,7 @@ pipeConfigs = [
 
 
 # 0.3048 meters per foot. the internal stuff expects meters but we like feet
-pipeConfigs = [(l*0.3048, d, t, s, f, b, v) 
+pipeConfigs = [(l*M_PER_FT, d, t, s, f, b, v) 
                for l, d, t, s, f,  b, v in pipeConfigs]
 
 '''
@@ -88,11 +94,26 @@ def main():
         fluidMass * SLURRY_PERCENT_WEIGHT_WATER
     ]
 
+    # Runs simulation of the units to get final masses
     units = runProductionLine(initialMasses, units)
 
     pipes = createPipes(pipeConfigs, units, FLOW_RATE, fluidDensity)
 
-    pump = Pump(PUMP_TIER, PUMP_HEIGHT, FLOW_RATE)
+    wastePotentialEnergy = 0
+
+    for i, pipe in enumerate(pipes[5:]):
+        outletHeight = UNIT_ELEVATIONS[i] + pipe.heightChange
+        wastePotentialEnergy += pipe.getGravitationalPEChange(outletHeight)
+
+    # Only the kinetic energy flowing out of the system should count
+    # This includes waste pipes/ducts and the final product output
+    wasteKineticEnergy = sum(pipe.getKineticEnergy() for pipe in pipes[5:])
+
+    outputKineticEnergy = pipes[4].getKineticEnergy()
+
+    outputHeight = UNIT_ELEVATIONS[-1] + pipes[4].heightChange
+
+    outputPotentialEnergy = pipes[4].getGravitationalPEChange(outputHeight)
 
     pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
 
@@ -101,9 +122,18 @@ def main():
     # Including pumping out waste
     pipeEnergyLoss = sum(pipe.getEnergyLoss() for pipe in pipes)
 
-    # Includes co2 traveling out of duct up up and away into the sky
-    gravityEnergy = sum(pipe.getGravitationalPEChange() for pipe in pipes)
+    hydraulicEnergy = (
+        pipeEnergyLoss + 
+        wastePotentialEnergy +
+        wasteKineticEnergy + 
+        outputPotentialEnergy + 
+        outputKineticEnergy
+        )
 
+    pump = Pump(PUMP_TIER, PUMP_HEIGHT, FLOW_RATE)
+
+    pumpEnergy = pump.getEnergyKWh(hydraulicEnergy)
+    pumpCapitalCost = pump.getCapitalCost()
 
     # FINAL SYSTEM OUTPUTS
 
@@ -129,16 +159,16 @@ def main():
     unitCapitalCost = sum(unit.getCapitalCost() for unit in units)
 
     # Total costs
-    totalCost = unitCapitalCost + pipeCapitalCost + SITE_COST
+    totalCost = unitCapitalCost + pipeCapitalCost + pumpCapitalCost + SITE_COST
 
     # Electrical energy used by unit operations
-    totalEnergy = sum(unit.getEnergy() for unit in units)
+    totalEnergy = sum(unit.getEnergy() for unit in units) + pumpEnergy
 
     # Ethanol energy output (MJ/day)
     ethanolVolume = ethanolMass / DENSITY_ETHANOL
     energyOutput = ethanolVolume * ETHANOL_ENERGY_DENSITY
 
-    # Energy ROI (excluding pump energy for now)
+    # Energy ROI (kWh->MJ is a factor of 3.6)
     energyROI = energyOutput / (totalEnergy * 3.6)
 
     # Final summary
@@ -155,15 +185,22 @@ def main():
     print()
 
     print("ENERGY")
+    print(f"Pipe Losses: {pipeEnergyLoss/1000:,.2f} kJ/day")
+    print(f"Waste GPE: {wastePotentialEnergy/1000:,.2f} kJ/day")
+    print(f"Waste KE: {wasteKineticEnergy/1000:,.2f} kJ/day")
+    print(f"Output GPE: {outputPotentialEnergy/1000:,.2f} kJ/day")
+    print(f"Output KE: {outputKineticEnergy/1000:,.2f} kJ/day")
+    print(f"Pump Electricity: {pumpEnergy:,.2f} kWh/day")
+
     print(f"Electrical Input: {totalEnergy:,.2f} kWh/day")
     print(f"Ethanol Energy: {energyOutput:,.2f} MJ/day")
-    print(f"Pipe Energy Loss: {pipeEnergyLoss:,.2f} J/day")
     print(f"Energy ROI: {energyROI:.2f}")
     print()
 
     print("CAPITAL COSTS")
     print(f"Unit Operations: ${unitCapitalCost:,.2f}")
     print(f"Pipe and Duct Costs: ${pipeCapitalCost:,.2f}")
+    print(f"Pump: ${pumpCapitalCost:,.2f}")
     print()
 
     print("TOTAL COST")
