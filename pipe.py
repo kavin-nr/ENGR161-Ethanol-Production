@@ -1,11 +1,11 @@
 from utils import (energyLostToFriction, calcFluidVelocity, SECONDS_PER_DAY,
-                   energyLostToBend, energyLostToValve)
+                   energyLostToBend, energyLostToValve, LITTLE_G)
 from catalog import (PIPE_OPTIONS, DUCTWORK_OPTIONS, DUCTWORK_FRICTION_FACTOR,
                      BEND_OPTIONS, VALVE_OPTIONS)
 
 class Pipe:
 
-    def __init__(self, length, diameter, tier, flowRate, density, 
+    def __init__(self, length, diameter, tier, flowRate, density, fluidDirection,
                  bends=None, valves=None):
 
         self.length = length
@@ -22,6 +22,8 @@ class Pipe:
 
         self.bends = bends if bends is not  None else []
         self.valves = valves if valves is not None else []
+
+        self.heightChange = fluidDirection * self.length
 
 
     # total cost from bends and valves
@@ -71,17 +73,22 @@ class Pipe:
 
         return loss
 
+    def getGravitationalPEChange(self):
+        return self.getFluidMass() * LITTLE_G * self.heightChange
+    
     # Energy loss for a given pipe system is friction + fittings (for now)
     # i need to add gravitational potential energy
     def getEnergyLoss(self):
         return self.getFrictionLoss() + self.getFittingsLoss()
+
+
 
 # If you think about it, ducts are basically pipes with a few caveats
 # Just made sense to just have it as a child class 
 
 class Duct(Pipe):
 
-    def __init__(self, length, diameter, flowRate, density):
+    def __init__(self, length, diameter, flowRate, density, fluidDirection):
 
         self.length = length
         self.diameter = diameter
@@ -89,6 +96,9 @@ class Duct(Pipe):
         self.density = density
         self.frictionFactor = DUCTWORK_FRICTION_FACTOR
         self.costPerMeter = DUCTWORK_OPTIONS[diameter]
+
+        self.heightChange = fluidDirection * self.length
+
 
         # even though ducts don't have fittings,
         # its parent class is Pipe which uses fitting functions for 
@@ -107,7 +117,7 @@ class Duct(Pipe):
 
 def createPipes(configs, units, initialFlowRate, initialDensity):
     pipes = []
-    for length, diameter, tier, source, bends, valves, in configs:
+    for length, diameter, tier, source, direction, bends, valves in configs:
         duct = False
         # If the pipe is coming from somewhere, then use its output flow
         if source is not None:
@@ -153,6 +163,7 @@ def createPipes(configs, units, initialFlowRate, initialDensity):
                 tier=tier,
                 flowRate=flowRate,
                 density=density,
+                fluidDirection=direction,
                 bends=bends,
                 valves=valves
             )
@@ -161,7 +172,8 @@ def createPipes(configs, units, initialFlowRate, initialDensity):
                 length=length,
                 diameter=diameter,
                 flowRate=flowRate,
-                density=density
+                density=density,
+                fluidDirection=direction
             )
 
         pipes.append(pipe)

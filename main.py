@@ -2,41 +2,48 @@ import sys; args = sys.argv[1:] # Neat to grab command line args
 from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
 from pipe import Pipe, Duct, createPipes
-
+from pump import Pump
 
 # DESIGN VARIABLES (assumed)
 
 DAILY_FLOW_RATE = 3161.58 # m3/day
 FLOW_RATE = 3161.58 / SECONDS_PER_DAY # m3/s
 
-PUMP_EFFICIENCY = 0.8
+PUMP_TIER = "cheap"
+PUMP_HEIGHT = 18
 
 # Length in FEET but diameter in meters
 # Tier is as per the parts catalog
 # Source is None for initial slurry, 
+# Fluid direction is either -1 (fluid goes down)
+# 0 (fluid goes horizontally)
+# 1 (fluid goes up)
 # Bend is a list of angles
 # Valves is a list of tiers (of valves)
 
+
 # Again, lengths (1st param) are in feeeeeet...
 
-#   Length, diameter, tier,  source, bends, and valves
-pipeConfigs = [
-    (41, 0.10, "nice", None, [90], ["questionable"]),           # INPUT
-    (10, 0.10, "nice", "fermenter", [], ["questionable", "questionable"]),# FERMENTER OUTPUT
-    (10, 0.10, "nice", "filter", [], ["questionable", "questionable"]),       # FILTER OUTPUT
-    (10, 0.10, "nice", "distiller", [], ["questionable", "questionable"]),    # DISTILLER OUTPUT
-    (5, 0.10, "nice", "dehydrator", [], ["questionable"]),    # OUTPUT
+# Length, diameter, tier, source, fluidDirection, bends, valves
 
-    (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste", [], []),    # CO2 
-    (1, 0.10, "salvage", "filter-waste", [], []),     # FILTER WASTE
-    (1, 0.10, "salvage", "distiller-waste", [], []),     # DISTILLER WASTE
-    (1, 0.10, "salvage", "dehydrator-waste", [], [])     # DEHYDRATOR WASTE
+pipeConfigs = [
+    (41, 0.10, "nice", None, 1, [90], ["questionable"]),           # INPUT
+    (10, 0.10, "nice", "fermenter", -1, [], ["questionable", "questionable"]),# FERMENTER OUTPUT
+    (10, 0.10, "nice", "filter", -1, [], ["questionable", "questionable"]),       # FILTER OUTPUT
+    (10, 0.10, "nice", "distiller", 0, [], ["questionable", "questionable"]),    # DISTILLER OUTPUT
+    (5, 0.10, "nice", "dehydrator", 0, [], ["questionable"]),    # OUTPUT
+
+    (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste", 1, [], []),    # CO2 
+    (1, 0.10, "salvage", "filter-waste", 0, [], []),     # FILTER WASTE
+    (1, 0.10, "salvage", "distiller-waste", 0, [], []),     # DISTILLER WASTE
+    (1, 0.10, "salvage", "dehydrator-waste", 0, [], [])     # DEHYDRATOR WASTE
 
 ]
 
 
 # 0.3048 meters per foot. the internal stuff expects meters but we like feet
-pipeConfigs = [(l*0.3048, d, t, s, b, v) for l, d, t, s, b, v in pipeConfigs]
+pipeConfigs = [(l*0.3048, d, t, s, f, b, v) 
+               for l, d, t, s, f,  b, v in pipeConfigs]
 
 '''
 Costs
@@ -85,12 +92,17 @@ def main():
 
     pipes = createPipes(pipeConfigs, units, FLOW_RATE, fluidDensity)
 
+    pump = Pump(PUMP_TIER, PUMP_HEIGHT, FLOW_RATE)
+
     pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
 
     # IMPORTANT IMPORTANT IMPORTANT ASSUMPTION
     # We assume that main pump is providing energy for the whole system
     # Including pumping out waste
     pipeEnergyLoss = sum(pipe.getEnergyLoss() for pipe in pipes)
+
+    # Includes co2 traveling out of duct up up and away into the sky
+    gravityEnergy = sum(pipe.getGravitationalPEChange() for pipe in pipes)
 
 
     # FINAL SYSTEM OUTPUTS
