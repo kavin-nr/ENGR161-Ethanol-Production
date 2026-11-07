@@ -1,5 +1,5 @@
 from utils import (calcDensityMixture, DENSITY_SUGAR, DENSITY_ETHANOL, 
-    DENSITY_FIBROUS, DENSITY_WATER, SECONDS_PER_DAY)
+    DENSITY_FIBROUS, DENSITY_WATER, DENSITY_CO2, SECONDS_PER_DAY)
 from catalog import (FERMENTER_OPTIONS, FILTER_OPTIONS, 
     DISTILLER_OPTIONS, DEHYDRATOR_OPTIONS)
 
@@ -89,14 +89,9 @@ class Unit:
     def getOutputPurity(self):
         return self.getEthanol() / self.getTotalMassOutput()
 
-    # Nothing generates CO2 except for the fermenter
-    def getCO2(self):
-        return 0 
-
-
     # These two functions are mainly getters to initialize pipe objects
     def getOutputDensity(self):
-        totalMass = self.getInputMass()
+        totalMass = self.getOutputMass()
 
         # don't want zero division errors
         if totalMass == 0:
@@ -112,8 +107,54 @@ class Unit:
         return calcDensityMixture(components)
 
     def getOutputFlowRate(self):
-        return (self.getInputMass() /
-            self.getInputDensity() / SECONDS_PER_DAY)
+        return (self.getOutputMass() /
+            self.getOutputDensity() / SECONDS_PER_DAY)
+
+
+    
+    # Waste generated in kg/day
+    # same order as usual: sugar, ethanol, fibrous, water
+    def getWasteMasses(self):
+        inputs = [self.sugar, self.ethanol, self.fibrous, self.water]
+        outputs = self.getOutputs()
+
+        # UAE really putting in the work here
+        # nothing generated, nothing remains in the unit
+        # so input minus output is the consumed/waste
+        waste = []
+        assert len(inputs) == len(outputs)
+        for i in range(len(inputs)):
+            waste.append(inputs[i] - outputs[i])
+
+        return waste
+
+    def getWasteMass(self):
+        return sum(self.getWasteMasses())
+
+    def getWasteDensity(self):
+        wasteMass = self.getWasteMass()
+
+        if wasteMass == 0:
+            return 0
+
+        sugar, ethanol, fibrous, water = self.getWasteMasses()
+
+        components = {
+            DENSITY_SUGAR: sugar / wasteMass,
+            DENSITY_ETHANOL: ethanol / wasteMass,
+            DENSITY_FIBROUS: fibrous / wasteMass,
+            DENSITY_WATER: water / wasteMass
+        }
+
+        return calcDensityMixture(components)
+
+    def getWasteFlowRate(self):
+        if self.getWasteMass() == 0:
+            return 0
+
+        return (self.getWasteMass() /
+                self.getWasteDensity() / SECONDS_PER_DAY)
+
 
 
 
@@ -137,6 +178,13 @@ class Fermenter(Unit):
     # Waste
     def getCO2(self):
         return self.SUGAR_TO_CO2 * self.sugar * self.efficiency
+    
+    def getWasteMass(self):
+        return self.getCO2()
+
+    def getWasteDensity(self):
+        return DENSITY_CO2
+
 
 
 # Fibrous material is taken out
