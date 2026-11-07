@@ -1,6 +1,6 @@
 from utils import energyLostToFriction, calcFluidVelocity, SECONDS_PER_DAY
 from catalog import PIPE_OPTIONS, DUCTWORK_OPTIONS, DUCTWORK_FRICTION_FACTOR
-
+import sys
 
 class Pipe:
 
@@ -65,37 +65,59 @@ class Duct(Pipe):
 def createPipes(configs, units, initialFlowRate, initialDensity):
     pipes = []
     for length, diameter, tier, source in configs:
-
+        duct = False
         # If the pipe is coming from somewhere, then use its output flow
         if source is not None:
             match source:
                 case "fermenter":
-                    return 0
+                    id = 0
                 case "filter":
-                    return 1
+                    id = 1
                 case "distiller":
-                    return 2
+                    id = 2
                 case "dehydrator":
-                    return 3
+                    id = 3
+                case "fermenter-waste":
+                    id = 4
+                    duct = True
+                case "filter-waste":
+                    id = 5
+                case "distiller-waste":
+                    id = 6
+                case "dehydrator-waste":
+                    id = 7
                 case _:
                     raise Exception("Unknown pipe source")
-            
-            flowRate = units[source].getOutputFlowRate()
-            density = units[source].getOutputDensity()
+
+            if 0 <= id <= 3:
+                flowRate = units[id].getOutputFlowRate()
+                density = units[id].getOutputDensity()
+
+            else:                  
+                flowRate = units[id - 4].getWasteFlowRate()
+                density = units[id - 4].getWasteDensity()
 
         # Initial slurry pipe, so initial slurry flow
         else:
             flowRate = initialFlowRate
             density = initialDensity
 
-        # Make a pipe obejct
-        pipe = Pipe(
-            length=length,
-            diameter=diameter,
-            tier=tier,
-            flowRate=flowRate,
-            density=density
-        )
+        if not duct:
+            # Make a pipe obejct
+            pipe = Pipe(
+                length=length,
+                diameter=diameter,
+                tier=tier,
+                flowRate=flowRate,
+                density=density
+            )
+        else:
+            pipe = Duct(
+                length=length,
+                diameter=diameter,
+                flowRate=flowRate,
+                density=density
+            )
 
         pipes.append(pipe)
 
