@@ -8,34 +8,35 @@ from pipe import Pipe, Duct, createPipes
 
 DAILY_FLOW_RATE = 3161.58 # m3/day
 FLOW_RATE = 3161.58 / SECONDS_PER_DAY # m3/s
-NUM_VALVES = 8
-NUM_BENDS = 4 # 90 degrees
 
 PUMP_EFFICIENCY = 0.8
 
-# Pipe length, diameter, tier, and source
 # Length in FEET but diameter in meters
 # Tier is as per the parts catalog
 # Source is None for initial slurry, 
+# Bend is a list of angles
+# Valves is a list of tiers (of valves)
 
 # Again, lengths (1st param) are in feeeeeet...
-pipeConfigs = [
-    (41, 0.10, "nice", None),           # INPUT
-    (10, 0.10, "nice", "fermenter"),    # FERMENTER OUTPUT
-    (10, 0.10, "nice", "filter"),       # FILTER OUTPUT
-    (10, 0.10, "nice", "distiller"),    # DISTILLER OUTPUT
-    (5, 0.10, "nice", "dehydrator"),    # OUTPUT
 
-    (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste"),    # CO2 
-    (1, 0.10, "salvage", "filter-waste"),     # FILTER WASTE
-    (1, 0.10, "salvage", "distiller-waste"),     # DISTILLER WASTE
-    (1, 0.10, "salvage", "dehydrator-waste")     # DEHYDRATOR WASTE
+#   Length, diameter, tier,  source, bends, and valves
+pipeConfigs = [
+    (41, 0.10, "nice", None, [90], ["questionable"]),           # INPUT
+    (10, 0.10, "nice", "fermenter", [], ["questionable", "questionable"]),# FERMENTER OUTPUT
+    (10, 0.10, "nice", "filter", [], ["questionable", "questionable"]),       # FILTER OUTPUT
+    (10, 0.10, "nice", "distiller", [], ["questionable", "questionable"]),    # DISTILLER OUTPUT
+    (5, 0.10, "nice", "dehydrator", [], ["questionable"]),    # OUTPUT
+
+    (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste", [], []),    # CO2 
+    (1, 0.10, "salvage", "filter-waste", [], []),     # FILTER WASTE
+    (1, 0.10, "salvage", "distiller-waste", [], []),     # DISTILLER WASTE
+    (1, 0.10, "salvage", "dehydrator-waste", [], [])     # DEHYDRATOR WASTE
 
 ]
 
 
 # 0.3048 meters per foot. the internal stuff expects meters but we like feet
-pipeConfigs = [(l*0.3048, d, t, s) for l, d, t, s in pipeConfigs]
+pipeConfigs = [(l*0.3048, d, t, s, b, v) for l, d, t, s, b, v in pipeConfigs]
 
 '''
 Costs
@@ -84,7 +85,14 @@ def main():
 
     pipes = createPipes(pipeConfigs, units, FLOW_RATE, fluidDensity)
 
-    
+    pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
+
+    # IMPORTANT IMPORTANT IMPORTANT ASSUMPTION
+    # We assume that main pump is providing energy for the whole system
+    # Including pumping out waste
+    pipeEnergyLoss = sum(pipe.getEnergyLoss() for pipe in pipes)
+
+
     # FINAL SYSTEM OUTPUTS
 
     finalUnit = units[-1]
@@ -107,8 +115,6 @@ def main():
 
     # Capital costs (unit operations only)
     unitCapitalCost = sum(unit.getCapitalCost() for unit in units)
-
-    pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
 
     # Total costs
     totalCost = unitCapitalCost + pipeCapitalCost + SITE_COST
@@ -139,6 +145,7 @@ def main():
     print("ENERGY")
     print(f"Electrical Input: {totalEnergy:,.2f} kWh/day")
     print(f"Ethanol Energy: {energyOutput:,.2f} MJ/day")
+    print(f"Pipe Energy Loss: {pipeEnergyLoss:,.2f} J/day")
     print(f"Energy ROI: {energyROI:.2f}")
     print()
 
