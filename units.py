@@ -91,7 +91,7 @@ class Unit:
 
     # These two functions are mainly getters to initialize pipe objects
     def getOutputDensity(self):
-        totalMass = self.getOutputMass()
+        totalMass = self.getTotalMassOutput()
 
         # don't want zero division errors
         if totalMass == 0:
@@ -107,7 +107,7 @@ class Unit:
         return calcDensityMixture(components)
 
     def getOutputFlowRate(self):
-        return (self.getOutputMass() /
+        return (self.getTotalMassOutput() /
             self.getOutputDensity() / SECONDS_PER_DAY)
 
 
