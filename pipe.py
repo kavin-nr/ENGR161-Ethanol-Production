@@ -119,8 +119,8 @@ class Duct(Pipe):
 
     # Also, the validation model says it neglects waste pipe friction. I'm 
     # just going to go with that for now. 
-        def getEnergyLoss(self):
-            return 0
+    def getEnergyLoss(self):
+        return 0
 
 
 def createPipes(configs, units, initialFlowRate, initialDensity):
