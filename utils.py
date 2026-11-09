@@ -16,10 +16,12 @@ LITTLE_G = 9.81 # m/s2
 
 ETHANOL_ENERGY_DENSITY = 21160.18 # MJ/m3
 
+TARGET_GALLONS = 100000 # gal of ethanol/day
 
 
-DAILY_FLOW_RATE = 3161.58 # m3/day
-FLOW_RATE = 3161.58 / SECONDS_PER_DAY # m3/s
+# Retired. These are no longer constants.
+# DAILY_FLOW_RATE = 0 # m3/day
+# FLOW_RATE = DAILY_FLOW_RATE / SECONDS_PER_DAY # m3/s
 
 SLURRY_PERCENT_WEIGHT_SUGAR = 0.20
 SLURRY_PERCENT_WEIGHT_ETHANOL = 0
@@ -89,6 +91,20 @@ def suddenContractionLoss(flowRate, area1, area2, Cc):
     headLoss = Kc * velocity2 ** 2 / (2 * LITTLE_G)
     
     return headLoss
+
+
+def calcRequiredSlurryFlowRate(fermenterEfficiency):
+
+    slurryDensity = calcDensityMixture(SLURRY_COMPONENTS)
+
+    targetEthanolVolume = TARGET_GALLONS / GAL_PER_M3
+    targetEthanolMass = targetEthanolVolume * DENSITY_ETHANOL
+
+    # this is how many kg of ethanol is in per m3 of slurry
+    ethanolMassPerM3 = (slurryDensity * SLURRY_PERCENT_WEIGHT_SUGAR * 0.51 * 
+                        fermenterEfficiency)
+
+    return targetEthanolMass / ethanolMassPerM3
 
 def runProductionLine(initialMasses, units):
 

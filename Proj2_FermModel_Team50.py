@@ -3,6 +3,7 @@ from units import Fermenter, Filter, Distiller, Dehydrator
 from utils import *
 from pipe import Pipe, Duct, createPipes
 from pump import Pump
+from catalog import FERMENTER_OPTIONS
 
 '''
 DESIGN VARIABLES
@@ -98,7 +99,15 @@ def main():
     
     fermenterTier, filterTier, distillerTier, dehydratorTier = unitTiers
 
-    
+    # This is now a dynamic quantity. We will minimize the slurry needed. 
+    # Round up so we don't go under.
+    DAILY_FLOW_RATE = math.ceil(
+        calcRequiredSlurryFlowRate(FERMENTER_OPTIONS[fermenterTier][0])
+        )
+
+    FLOW_RATE = DAILY_FLOW_RATE / SECONDS_PER_DAY
+
+
     
     units = [
         (Fermenter, fermenterTier),
@@ -284,9 +293,10 @@ def main():
         print(f"Ethanol Purity: {finalPurity:.2%}")
         print(f"Energy ROI: {energyROI:.2f}")
         print(f"Total Capital Cost: ${totalCost:,.2f}")
+        print(f"Required Slurry: {DAILY_FLOW_RATE:,.2f} m3/day")
         print()
 
-        productionMet = ethanolGallons >= 100000
+        productionMet = ethanolGallons >= TARGET_GALLONS
         purityMet = finalPurity >= 0.98
 
         print(f"Production Met: {productionMet}")
