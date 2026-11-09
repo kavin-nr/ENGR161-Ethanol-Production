@@ -8,9 +8,9 @@ from pump import Pump
 DESIGN VARIABLES
 '''
 
-UNIT_TIERS = ["premium", "premium", "premium", "premium"]
-PUMP_TIER = "cheap"
-PUMP_HEIGHT = 18
+UNIT_TIERS = ["world-class", "premium", "average", "world-class"]
+PUMP_TIER = "value"
+PUMP_HEIGHT = 36 # effective pipe rating (m)
 
 # Elevations of unit outlets relative to ground (feet, but we'll convert)
 # Fermenter, filter, distiller, dehydrator
@@ -18,7 +18,7 @@ UNIT_ELEVATIONS = [40, 20, 0, 0]
 
 
 # Expansion and contraction stuff
-CC = 0.5 # Coefficient of contraction, ASSUME sharp orifice
+CC = 0.6 # Coefficient of contraction, ASSUME sharp orifice
          # The smaller the coefficient, the higher the losses
 
 
@@ -44,11 +44,10 @@ UNIT_OUTLET_AREAS = [400, 400, 200, 200]
 # Length, diameter, tier, source, fluidDirection, bends, valves
 
 PIPE_CONFIGS = [
-    (41, 0.10, "nice", None, 1, [90], ["questionable"]),           # INPUT
-    (10, 0.10, "nice", "fermenter", -1, [], ["questionable", "questionable"]),# FERMENTER OUTPUT
-    (10, 0.10, "nice", "filter", -1, [], ["questionable", "questionable"]),       # FILTER OUTPUT
-    (10, 0.10, "nice", "distiller", 0, [], ["questionable", "questionable"]),    # DISTILLER OUTPUT
-    (5, 0.10, "nice", "dehydrator", 0, [], ["questionable"]),    # OUTPUT
+    (35, 0.10, "salvage", None, 1, [90], ["outstanding"]),           # INPUT
+    (10, 0.10, "nice", "fermenter", -1, [], ["outstanding", "outstanding"]),# FERMENTER OUTPUT
+    (10, 0.10, "nice", "filter", -1, [], ["outstanding", "outstanding"]),       # FILTER OUTPUT
+    (10, 0.10, "better", "distiller", 0, [], ["outstanding", "outstanding"]),    # DISTILLER OUTPUT
 
     (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste", 1, [], []),    # CO2 
     (1, 0.10, "salvage", "filter-waste", 0, [], []),     # FILTER WASTE
@@ -127,19 +126,19 @@ def main():
 
     wastePotentialEnergy = 0
 
-    for i, pipe in enumerate(pipes[5:]):
+    for i, pipe in enumerate(pipes[4:]):
         outletHeight = UNIT_ELEVATIONS[i] + pipe.heightChange
         wastePotentialEnergy += pipe.getGravitationalPEChange(outletHeight)
 
     # Only the kinetic energy flowing out of the system should count
     # This includes waste pipes/ducts and the final product output
-    wasteKineticEnergy = sum(pipe.getKineticEnergy() for pipe in pipes[5:])
+    wasteKineticEnergy = sum(pipe.getKineticEnergy() for pipe in pipes[4:])
 
-    outputKineticEnergy = pipes[4].getKineticEnergy()
+    outputKineticEnergy = 0 # Since we no longer have an output pipe, we 
+                            # don't know discharge velocity
 
-    outputHeight = UNIT_ELEVATIONS[-1] + pipes[4].heightChange
-
-    outputPotentialEnergy = pipes[4].getGravitationalPEChange(outputHeight)
+    outputPotentialEnergy = (units[-1].getTotalMassOutput() 
+                             * LITTLE_G * UNIT_ELEVATIONS[-1])
 
     pipeCapitalCost = sum(pipe.getCapitalCost() for pipe in pipes)
 
@@ -169,15 +168,16 @@ def main():
 
         # Now we deal with the outgoing from units, contraction
         # Going from a large cross sectional area to a smaller pipe
-        outletPipe = pipes[i + 1]
-        outletArea = math.pi * (outletPipe.diameter / 2)**2
-        contractionHead = suddenContractionLoss(
-            outletPipe.flowRate, UNIT_OUTLET_AREAS[i], outletArea, CC
-        )
+        if i < 3:
+            outletPipe = pipes[i + 1]
+            outletArea = math.pi * (outletPipe.diameter / 2)**2
+            contractionHead = suddenContractionLoss(
+                outletPipe.flowRate, UNIT_OUTLET_AREAS[i], outletArea, CC
+            )
 
-        transitionEnergyLoss += (
-            outletPipe.getFluidMass() * LITTLE_G * contractionHead
-        )
+            transitionEnergyLoss += (
+                outletPipe.getFluidMass() * LITTLE_G * contractionHead
+            )
     
     hydraulicEnergy = (
         pipeEnergyLoss + 
