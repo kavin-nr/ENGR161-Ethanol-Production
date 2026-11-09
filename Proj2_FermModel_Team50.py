@@ -16,6 +16,19 @@ PUMP_HEIGHT = 18
 # Fermenter, filter, distiller, dehydrator
 UNIT_ELEVATIONS = [40, 20, 0, 0]
 
+
+# Expansion and contraction stuff
+CC = 0.5 # Coefficient of contraction, ASSUME sharp orifice
+         # The smaller the coefficient, the higher the losses
+
+
+# To calculate cross sectional areas where pipes flow in (ft^2)
+# fermenter, fillter, distiller, dehydrator
+UNIT_INLET_AREAS = [200, 400, 400, 200] 
+UNIT_OUTLET_AREAS = [400, 400, 200, 200]
+
+
+
 # Length in FEET but diameter in meters
 # Tier is as per the parts catalog
 # Source is None for initial slurry, 
@@ -49,6 +62,10 @@ PIPE_CONFIGS = [
 pipeConfigs = [(l*M_PER_FT, d, t, s, f, b, v) 
                for l, d, t, s, f,  b, v in PIPE_CONFIGS]
 UNIT_ELEVATIONS = [h * M_PER_FT for h in UNIT_ELEVATIONS]
+
+# Going from ft2 to m2 requires squaring conversion factor
+UNIT_INLET_AREAS = [a * (M_PER_FT)**2 for a in UNIT_INLET_AREAS]
+UNIT_OUTLET_AREAS = [a * (M_PER_FT)**2 for a in UNIT_OUTLET_AREAS]
 
 '''
 Costs
@@ -131,8 +148,40 @@ def main():
     # Including pumping out waste
     pipeEnergyLoss = sum(pipe.getEnergyLoss() for pipe in pipes)
 
+
+    transitionEnergyLoss = 0
+
+
+    # i pretty much represents the index of the unit
+    for i in range(4):
+        # Expansion is when fluid goes from a pipe 
+        # to a (much) larger unit operation tank
+        inletPipe = pipes[i]
+        inletArea = math.pi * (inletPipe.diameter/ 2)**2
+
+        expansionHead = suddenExpansionLoss(
+            inletPipe.flowRate, inletArea, UNIT_INLET_AREAS[i]
+        )
+
+        transitionEnergyLoss += (
+            inletPipe.getFluidMass() * LITTLE_G * expansionHead
+        )
+
+        # Now we deal with the outgoing from units, contraction
+        # Going from a large cross sectional area to a smaller pipe
+        outletPipe = pipes[i + 1]
+        outletArea = math.pi * (outletPipe.diameter / 2)**2
+        contractionHead = suddenContractionLoss(
+            outletPipe.flowRate, UNIT_OUTLET_AREAS[i], outletArea, CC
+        )
+
+        transitionEnergyLoss += (
+            outletPipe.getFluidMass() * LITTLE_G * contractionHead
+        )
+    
     hydraulicEnergy = (
         pipeEnergyLoss + 
+        transitionEnergyLoss +
         wastePotentialEnergy +
         wasteKineticEnergy + 
         outputPotentialEnergy + 
@@ -203,6 +252,8 @@ def main():
         print(f"Output GPE: {outputPotentialEnergy/1000:,.2f} kJ/day")
         print(f"Output KE: {outputKineticEnergy/1000:,.2f} kJ/day")
         print(f"Pump Electricity: {pumpEnergy:,.2f} kWh/day")
+
+        print(f"Expansion/Contraction Loss: {transitionEnergyLoss/1000:,.2f} kJ/day")
 
         print(f"Electrical Input: {totalEnergy:,.2f} kWh/day")
         print(f"Ethanol Energy: {energyOutput:,.2f} MJ/day")

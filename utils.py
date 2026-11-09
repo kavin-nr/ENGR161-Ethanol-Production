@@ -71,6 +71,24 @@ def energyLostToBend(fluidMass, pipeBendFactor, fluidVelocity):
 def energyLostToValve(fluidMass, lossCoefficient, fluidVelocity):
     return 1/2 * fluidMass * lossCoefficient * fluidVelocity**2
 
+def suddenExpansionLoss(flowRate, area1, area2):
+    
+    velocity1 = flowRate / area1
+    velocity2 = flowRate / area2
+    
+    headLoss = (velocity1 - velocity2)**2 / (2 * LITTLE_G)
+    
+    return headLoss
+
+def suddenContractionLoss(flowRate, area1, area2, Cc):
+    
+    velocity2 = flowRate / area2
+    
+    Kc = (1 / Cc - 1)**2 # contraction loss coefficient
+    
+    headLoss = Kc * velocity2 ** 2 / (2 * LITTLE_G)
+    
+    return headLoss
 
 def runProductionLine(initialMasses, units):
 
