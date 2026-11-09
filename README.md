@@ -32,8 +32,8 @@ Available unit tiers are:
 To display detailed results, append the `-v` flag:
 
 ```bash
-python main.py -v
+python Proj2_FermModel_Team50.py -v
 ```
 
 ```bash
-python main.py premium premium premium premium -v
+python Proj2_FermModel_Team50.py premium premium premium premium -v
