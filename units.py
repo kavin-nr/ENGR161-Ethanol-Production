@@ -158,7 +158,7 @@ class Unit:
 
 
 
-# Sugar is converted to ethanol and co2, everything else remains
+# Sugar is converted to ethanol and CO2, everything else remains
 class Fermenter(Unit):
     
     def __init__(self, *args):
