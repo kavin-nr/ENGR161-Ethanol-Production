@@ -18,7 +18,7 @@ PUMP_HEIGHT = 36 # effective pipe rating (m)
 UNIT_ELEVATIONS = [40, 20, 0, 0]
 
 
-# Expansion and contraction stuff
+# Expansion and contraction coefficients and calculations
 CC = 0.6 # Coefficient of contraction, ASSUME sharp orifice
          # The smaller the coefficient, the higher the losses
 
@@ -40,7 +40,7 @@ UNIT_OUTLET_AREAS = [400, 400, 200, 200]
 # Valves is a list of tiers (of valves)
 
 
-# Again, lengths (1st param) are in feeeeeet...
+# Again, lengths (1st param) are in feet
 
 # Length, diameter, tier, source, fluidDirection, bends, valves
 
