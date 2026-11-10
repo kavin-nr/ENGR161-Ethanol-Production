@@ -58,7 +58,7 @@ PIPE_CONFIGS = [
 ]
 
 
-# 0.3048 meters per foot. the internal stuff expects meters but we like feet
+# 0.3048 meters per foot. Internal diameters are in meters, but lengths are in feet.
 pipeConfigs = [(l*M_PER_FT, d, t, s, f, b, v) 
                for l, d, t, s, f,  b, v in PIPE_CONFIGS]
 UNIT_ELEVATIONS = [h * M_PER_FT for h in UNIT_ELEVATIONS]
@@ -71,7 +71,7 @@ UNIT_OUTLET_AREAS = [a * (M_PER_FT)**2 for a in UNIT_OUTLET_AREAS]
 Costs
 '''
 BASE_COST = 1600000 * 1.1 # USD, this is Site 3, with 10% upfront tax
-MOLD_COST = 18000 # USD, worst-case scenario
+MOLD_COST = 18000 # USD, worst-case scenario - best-case was calculated to be $12000
 SITE_COST = BASE_COST + MOLD_COST
 
 
