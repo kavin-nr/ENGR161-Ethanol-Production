@@ -48,8 +48,6 @@ class Pipe:
 
     def getFrictionLoss(self):
 
-        # If I haven't expressed my dislike for the 80 character limit before,
-        # I do here.
         return energyLostToFriction(
             self.getFluidMass(),
             self.frictionFactor,
@@ -115,7 +113,7 @@ class Duct(Pipe):
     
     # IMPORTANT TO NOTE: Darcy-Weisbach deals with the flow of incompressible
     # fluids. CO2 (going through these ducts) is a gas, so it's compressible.
-    # So we probably can neglect the energyLostToFriction in these ducts. 
+    # Thus, we assume we can neglect the energyLostToFriction in these ducts. 
 
     # Also, the validation model says it neglects waste pipe friction. I'm 
     # just going to go with that for now. 
@@ -164,7 +162,7 @@ def createPipes(configs, units, initialFlowRate, initialDensity):
             density = initialDensity
 
         if not duct:
-            # Make a pipe obejct
+            # Make a pipe object
             pipe = Pipe(
                 length=length,
                 diameter=diameter,
