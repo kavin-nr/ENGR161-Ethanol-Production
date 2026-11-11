@@ -45,10 +45,10 @@ UNIT_OUTLET_AREAS = [400, 400, 200, 200]
 # Length, diameter, tier, source, fluidDirection, bends, valves
 
 PIPE_CONFIGS = [
-    (35, 0.10, "salvage", None, 1, [90], ["outstanding"]),           # INPUT
-    (10, 0.10, "nice", "fermenter", -1, [], ["outstanding", "outstanding"]),# FERMENTER OUTPUT
-    (10, 0.10, "nice", "filter", -1, [], ["outstanding", "outstanding"]),       # FILTER OUTPUT
-    (10, 0.10, "better", "distiller", 0, [], ["outstanding", "outstanding"]),    # DISTILLER OUTPUT
+    (35, 0.14, "salvage", None, 1, [90], ["outstanding"]),           # INPUT
+    (10, 0.13, "nice", "fermenter", -1, [], ["outstanding", "outstanding"]),# FERMENTER OUTPUT
+    (10, 0.13, "nice", "filter", -1, [], ["outstanding", "outstanding"]),       # FILTER OUTPUT
+    (10, 0.12, "better", "distiller", 0, [], ["outstanding", "outstanding"]),    # DISTILLER OUTPUT
 
     (10, 1.00, "DUCTSDONTHAVETIERS", "fermenter-waste", 1, [], []),    # CO2 
     (1, 0.10, "salvage", "filter-waste", 0, [], []),     # FILTER WASTE
